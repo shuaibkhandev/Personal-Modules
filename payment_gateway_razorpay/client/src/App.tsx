@@ -1,8 +1,12 @@
+import { useEffect, useState } from 'react'
 import './App.css'
 import { useAppSelector } from './app/hooks'
 import type { Product } from './types/product'
 
 function ProductCard({ product }: { product: Product }) {
+
+
+
   const stockLabel = product.stock === 0
     ? 'Out of stock'
     : product.stock <= 10
@@ -60,7 +64,42 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 function App() {
-  const products = useAppSelector((state) => state.products.items)
+  const products = useAppSelector((state) => state.products.items);
+
+   // Number of products currently visible
+  const [visibleCount, setVisibleCount] = useState(8);
+
+    const visibleProducts = products.slice(0, visibleCount);
+
+      useEffect(() => {
+    const handleInfiniteScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const innerHeight = window.innerHeight;
+      const scrollTop = document.documentElement.scrollTop;
+
+      console.log("Scroll Height:", scrollHeight);
+      console.log("Inner Height:", innerHeight);
+      console.log("Scroll Top:", scrollTop);
+
+      // User reached the bottom
+      if (innerHeight + scrollTop + 1 >= scrollHeight) {
+        setVisibleCount((currentCount) => {
+          // Don't go beyond total products
+          if (currentCount >= products.length) {
+            return currentCount;
+          }
+
+          return currentCount + 8;
+        });
+      }
+    };
+
+    window.addEventListener("scroll", handleInfiniteScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleInfiniteScroll);
+    };
+  }, [products.length]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#e0f2fe,transparent_35%),#f4f7fb] px-4 py-10 sm:px-6 lg:px-10 lg:py-14">
@@ -77,7 +116,7 @@ function App() {
         </header>
 
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Product catalogue">
-          {products.map((product) => (
+          {visibleProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </section>

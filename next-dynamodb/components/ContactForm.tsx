@@ -1,31 +1,29 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 
-
 const ContactForm = () => {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-      const [loading, setLoading] = useState(false);
-      const [message, setMessage] = useState("");
+    const form = e.currentTarget;
 
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-           setLoading(true);
+    setLoading(true);
     setMessage("");
-    
-            const formData = new FormData(e.currentTarget);
 
-             const data = {
+    const formData = new FormData(e.currentTarget);
+
+    const data = {
       name: formData.get("name"),
       email: formData.get("email"),
       message: formData.get("message"),
     };
 
-try {
-      const response = await fetch("https://api.example.com/contact", {
+    try {
+      const response = await fetch("/api/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,29 +38,29 @@ try {
       }
 
       setMessage("Message sent successfully!");
-      e.currentTarget.reset();
+      form.reset();
     } catch (error) {
+      console.error("Frontend error:", error);
+
       setMessage("Failed to send message.");
     } finally {
       setLoading(false);
     }
-    
-    };
-
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
-        <h1 className="text-2xl font-bold mb-4">Contact Us</h1>
+      <h1 className="text-2xl font-bold mb-4">Contact Us</h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-             <input
-             className="border border-gray-300 rounded-md p-2 "
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <input
+          className="border border-gray-300 rounded-md p-2 "
           name="name"
           type="text"
           placeholder="Your name"
           required
         />
-          <input
+        <input
           className="border border-gray-300 rounded-md p-2 "
           name="email"
           type="email"
@@ -71,18 +69,22 @@ try {
         />
 
         <textarea
-        className="border border-gray-300 rounded-md p-2 "
+          className="border border-gray-300 rounded-md p-2 "
           name="message"
           placeholder="Your message"
           required
         />
-         <button type="submit" className="bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600 transition-colors duration-300" disabled={loading}>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600 transition-colors duration-300"
+          disabled={loading}
+        >
           {loading ? "Sending" : "Send Message"}
         </button>
-        </form>
-        <div className="mt-4">{message && <p>{message}</p>}</div>
+      </form>
+      <div className="mt-4">{message && <p>{message}</p>}</div>
     </div>
-  )
-}
+  );
+};
 
-export default ContactForm
+export default ContactForm;
