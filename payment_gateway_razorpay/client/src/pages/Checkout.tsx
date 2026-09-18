@@ -1,3 +1,4 @@
+import { createPayment } from "../api/payment";
 import { useAppSelector } from "../app/hooks";
 
 function Checkout() {
@@ -9,6 +10,20 @@ function Checkout() {
     (total, item) => total + item.price * item.quantity,
     0
   );
+
+    const handlePlaceOrder = async () => {
+    try {
+      // Stripe expects the amount in the smallest currency unit
+      const amount = Math.round(total * 100);
+
+      const result = await createPayment(amount, "usd");
+
+      console.log("Payment created:", result);
+
+    } catch (error) {
+      console.error("Payment failed:", error);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-10">
@@ -54,6 +69,7 @@ function Checkout() {
 
               <button
                 type="button"
+                onClick={handlePlaceOrder}
                 className="w-full rounded-lg bg-slate-900 py-3 font-semibold text-white hover:bg-sky-600"
               >
                 Place Order

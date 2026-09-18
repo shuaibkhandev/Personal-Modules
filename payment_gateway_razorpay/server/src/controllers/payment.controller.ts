@@ -1,11 +1,14 @@
 import type { Request, Response } from "express";
-import { createPaymentService } from "../services/payment.service";
+import { createPaymentService } from "../services/payment.service.js";
 
 export const createPayment = async (req: Request, res: Response) => {
   try {
     const { amount, currency } = req.body;
 
-    const payment = await createPaymentService(amount, currency);
+    const payment = await createPaymentService(
+      amount,
+      currency
+    );
 
     return res.status(201).json({
       success: true,
@@ -13,15 +16,11 @@ export const createPayment = async (req: Request, res: Response) => {
       data: payment,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error(error);
+
+    return res.status(500).json({
       success: false,
       message: "Something went wrong",
     });
   }
-
-  res.json({
-    success: true,
-    message: "Payment created successfully",
-    data: req.body,
-  });
 };

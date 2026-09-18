@@ -1,0 +1,38 @@
+                    FRONTEND
+┌─────────────────────────────────────────┐
+│ Products                                │
+│    ↓                                    │
+│ Add to Cart                             │
+│    ↓                                    │
+│ Cart                                    │
+│    ↓                                    │
+│ Checkout                                │
+│    ↓                                    │
+│ Create PaymentIntent API                │
+└───────────────────┬─────────────────────┘
+                    │
+                    ↓
+                BACKEND
+┌─────────────────────────────────────────┐
+│ POST /api/payments                      │
+│                                         │
+│ 1. Create Order in MongoDB              │
+│ 2. Create Stripe PaymentIntent          │
+│ 3. Save Payment in MongoDB              │
+│ 4. Return clientSecret                  │
+└───────────────────┬─────────────────────┘
+                    │
+                    ↓
+                 STRIPE
+                    │
+                    ↓
+          Customer enters card
+                    │
+                    ↓
+             Payment succeeds
+                    │
+                    ↓
+              Stripe Webhook
+                    │
+                    ↓
+          Update Payment + Order

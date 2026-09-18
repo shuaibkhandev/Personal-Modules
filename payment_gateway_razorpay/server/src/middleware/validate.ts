@@ -1,12 +1,11 @@
-import type {Request, Response, NextFunction} from "express";
+import type { Request, Response, NextFunction } from "express";
 import { ZodType } from "zod";
 
-
 export const validate = (schema: ZodType) => {
-    return (req: Request , res: Response, next: NextFunction) => {
-        const result = schema.safeParse(req.body);
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body);
 
-           if (!result.success) {
+    if (!result.success) {
       return res.status(400).json({
         success: false,
         message: "Invalid request data",
@@ -14,9 +13,8 @@ export const validate = (schema: ZodType) => {
       });
     }
 
-        req.body = result.data;
+    req.body = result.data;
 
-        next();
-
-    }
-}
+    next();
+  };
+};
