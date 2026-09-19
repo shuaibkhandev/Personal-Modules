@@ -1,7 +1,26 @@
-import { createPayment } from "../api/payment";
+import { useState } from "react";
 import { useAppSelector } from "../app/hooks";
+import { createPayment } from "../api/payment";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import PaymentForm from "../components/PaymentForm";
+
+const stripePromise = loadStripe(
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+);
 
 function Checkout() {
+const [clientSecret, setClientSecret] = useState<string | null>(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
+const [customer, setCustomer] = useState({
+  name: "",
+  email: "",
+  address: "",
+  city: "",
+});
+
+
   const cartItems = useAppSelector(
     (state) => state.cart.items
   );
@@ -12,17 +31,37 @@ function Checkout() {
   );
 
     const handlePlaceOrder = async () => {
+    if (cartItems.length === 0) {
+      setError("Your cart is empty.");
+      return;
+    }
+
+    if (!customer.name || !customer.email || !customer.address || !customer.city) {
+      setError("Please complete all customer fields.");
+      return;
+    }
+
     try {
-      // Stripe expects the amount in the smallest currency unit
-      const amount = Math.round(total * 100);
+          setLoading(true);
+          setError(null);
 
-      const result = await createPayment(amount, "usd");
+          const amount = Math.round(total * 100);
 
-      console.log("Payment created:", result);
+    const result = await createPayment({
+  customer,
+  items: cartItems,
+  amount,
+  currency: "usd",
+});
+          setClientSecret(result.data.clientSecret);
+
 
     } catch (error) {
       console.error("Payment failed:", error);
-    }
+      setError(error instanceof Error ? error.message : "Unable to create payment.");
+    } finally {
+    setLoading(false);
+  }
   };
 
   return (
@@ -43,37 +82,82 @@ function Checkout() {
 
             <div className="space-y-4">
 
-              <input
-                type="text"
-                placeholder="Full Name"
-                className="w-full rounded-lg border p-3"
-              />
+          <input
+  type="text"
+  placeholder="Full Name"
+  value={customer.name}
+  onChange={(e) =>
+    setCustomer({
+      ...customer,
+      name: e.target.value,
+    })
+  }
+  className="w-full rounded-lg border p-3"
+/>
 
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full rounded-lg border p-3"
-              />
+        <input
+  type="email"
+  placeholder="Email"
+  value={customer.email}
+  onChange={(e) =>
+    setCustomer({
+      ...customer,
+      email: e.target.value,
+    })
+  }
+  className="w-full rounded-lg border p-3"
+/>
 
-              <input
-                type="text"
-                placeholder="Address"
-                className="w-full rounded-lg border p-3"
-              />
-
-              <input
-                type="text"
-                placeholder="City"
-                className="w-full rounded-lg border p-3"
-              />
-
-              <button
-                type="button"
-                onClick={handlePlaceOrder}
-                className="w-full rounded-lg bg-slate-900 py-3 font-semibold text-white hover:bg-sky-600"
-              >
-                Place Order
-              </button>
+            <input
+  type="text"
+  placeholder="Address"
+  value={customer.address}
+  onChange={(e) =>
+    setCustomer({
+      ...customer,
+      address: e.target.value,
+    })
+  }
+  className="w-full rounded-lg border p-3"
+/>
+<input
+  type="text"
+  placeholder="City"
+  value={customer.city}
+  onChange={(e) =>
+    setCustomer({
+      ...customer,
+      city: e.target.value,
+    })
+  }
+  className="w-full rounded-lg border p-3"
+/>
+          {clientSecret ? (
+  <Elements
+    stripe={stripePromise}
+    options={{
+      clientSecret,
+    }}
+  >
+    <PaymentForm />
+  </Elements>
+) : (
+  <>
+    {error && (
+      <p className="text-sm text-red-600" role="alert">
+        {error}
+      </p>
+    )}
+    <button
+      type="button"
+      onClick={handlePlaceOrder}
+      disabled={loading}
+      className="w-full rounded-lg bg-slate-900 py-3 font-semibold text-white"
+    >
+      {loading ? "Creating Payment..." : "Continue to Payment"}
+    </button>
+  </>
+)}
 
             </div>
           </div>

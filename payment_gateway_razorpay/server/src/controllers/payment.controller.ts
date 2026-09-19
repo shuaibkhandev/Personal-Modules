@@ -1,11 +1,21 @@
 import type { Request, Response } from "express";
 import { createPaymentService } from "../services/payment.service.js";
 
-export const createPayment = async (req: Request, res: Response) => {
+export const createPayment = async (
+  req: Request,
+  res: Response
+) => {
   try {
-    const { amount, currency } = req.body;
+    const {
+      customer,
+      items,
+      amount,
+      currency,
+    } = req.body;
 
     const payment = await createPaymentService(
+      customer,
+      items,
       amount,
       currency
     );
