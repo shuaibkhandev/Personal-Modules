@@ -68,7 +68,7 @@ export default function CheckoutPage() {
   // Handle checkout
   // -------------------------
 
-  const handleSubmit = (
+  const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
@@ -80,7 +80,21 @@ export default function CheckoutPage() {
       currency: "usd",
     };
 
-    console.log("Order Data:", orderData);
+     try {
+    const response = await fetch("/api/payments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    const result = await response.json();
+
+    console.log("API Response:", result);
+  } catch (error) {
+    console.error("Payment request failed:", error);
+  }
   };
 
   return (
